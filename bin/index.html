@@ -78,6 +78,8 @@
 						"return nativeBridge.getIntLipcProperty('com.lab126.powerd', 'preventScreenSaver');", 
 						function(state)
 						{
+							// pillowHelper returns every value as a string.
+							state = parseInt(state, 10);
 							if( typeof(state) === 'number' && (state === 0 || state === 1 ) )
 							{
 								preventScreenSaverStateBackup = state;

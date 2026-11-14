@@ -75,6 +75,13 @@ fi
 ###############################################################################
 ## Start the application
 
+# Keep the screen on while the app runs. Set here as well as in index.html,
+# since that route goes through pillow; it lasts until the Kindle restarts.
+if grep -q "enablePreventScreenSaver: *true" $APP_FOLDER/settings.js 2>/dev/null
+then
+	lipc-set-prop com.lab126.powerd preventScreenSaver 1
+fi
+
 lipc-set-prop com.lab126.appmgrd start app://$APP_ID
 
 
