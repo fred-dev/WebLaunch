@@ -57,13 +57,10 @@ fi
 
 #------------------------------------------------------------------------------
 # Application command
-REG_COMMAND=$(sqlite3 $APPREG "select handlerId from properties where handlerId=$APP_ID_STRING and name='command'")
-
-if [[ -z "$REG_COMMAND" ]]
-then
-	echo "Application command not registered, registering..."
-	sqlite3 $APPREG "INSERT INTO properties (handlerId, name, value) VALUES ($APP_ID_STRING,'command','/usr/bin/mesquite -l $APP_ID -c $APP_FOLDER/bin/')"
-fi
+# Firmware 5.12 refuses a bare path ("Content uri did not resolve to a valid
+# local path"), so the folder is registered as a file:/// URI, replacing any older row.
+sqlite3 $APPREG "delete from properties where handlerId=$APP_ID_STRING and name='command'"
+sqlite3 $APPREG "INSERT INTO properties (handlerId, name, value) VALUES ($APP_ID_STRING,'command','/usr/bin/mesquite -l $APP_ID -c file://$APP_FOLDER/bin/')"
 
 #------------------------------------------------------------------------------
 # Application unloadPolicy

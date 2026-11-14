@@ -149,7 +149,50 @@
 						kindle.net.setWirelessState('on');
 					
 					// Load url 
-					kindle.chrome.createContentWindow(sessionSettings.url);
+					// createContentWindow shows nothing on firmware 5.12, so the page
+					// is held in a full-screen iframe in this app's own window instead.
+					var frame = document.createElement('iframe');
+					frame.setAttribute('frameborder', '0');
+					frame.setAttribute('scrolling', 'no');
+					frame.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;border:0;margin:0;padding:0';
+					frame.src = sessionSettings.url;
+					document.body.appendChild(frame);
+
+					// The power button only sleeps a 5.12 Kindle, so three taps on the
+					// top-right corner go home instead. The corner sits over the iframe,
+					// which would otherwise swallow the taps, and shows each tap it gets.
+					var corner = document.createElement('div');
+					corner.style.cssText = 'position:absolute;top:0;right:0;width:120px;height:120px;z-index:10;'
+						+ 'font:bold 48px sans-serif;text-align:center;line-height:120px;color:#000';
+					var taps = [];
+					var last = 0;
+					function goHome()
+					{
+						corner.innerHTML = '&#8962;';
+						// appmgrd's start, as start.sh launches this app; sent through pillow,
+						// the route that already hides the status bar.
+						pillowRun("nativeBridge.setLipcProperty('com.lab126.appmgrd', 'start', 'app://com.lab126.booklet.home');");
+						// What the firmware's own applicationLauncher.js does.
+						try { kindle.appmgr.start('app://com.lab126.booklet.home'); } catch(e) {}
+						// WebLaunch's own exit, stopping this app.
+						exitApplication();
+					}
+					function tap(event)
+					{
+						var now = new Date().getTime();
+						// One touch fires touchstart, mousedown and click; count it once.
+						if( now - last < 400 ) { return; }
+						last = now;
+						taps.push(now);
+						taps = taps.filter(function(t) { return now - t < 3000; });
+						corner.innerHTML = String(taps.length);
+						setTimeout(function() { if( new Date().getTime() - last >= 3000 ) { corner.innerHTML = ''; } }, 3100);
+						if( taps.length >= 3 ) { taps = []; goHome(); }
+					}
+					corner.addEventListener('touchstart', tap, false);
+					corner.addEventListener('mousedown', tap, false);
+					corner.addEventListener('click', tap, false);
+					document.body.appendChild(corner);
 					
 					// Set window title
 					kindle.chrome.setTitleBar('', sessionSettings.title);
@@ -186,7 +229,7 @@
 		</script>
 	</head>
 	
-	<body>
+	<body style="margin:0;padding:0;overflow:hidden">
 	</body>
 
 </html>

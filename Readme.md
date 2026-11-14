@@ -1,5 +1,12 @@
 # WebLaunch #
 
+> **Fork note:** this fork runs on newer firmware. It is tested on a basic Kindle (7th generation, 2014) on firmware 5.12.2.2, jailbroken with WinterBreak. Changes from upstream:
+>
+> * `bin/start.sh` registers the app folder as a `file:///` URI, as the firmware's own apps are registered. A bare path fails with "Content uri did not resolve to a valid local path".
+> * `bin/index.html` loads the URL in a full-screen iframe, since `kindle.chrome.createContentWindow` shows a blank screen on 5.12.
+> * The power button only sleeps the Kindle on 5.12, so three taps on the top-right corner go back to the home screen. The corner shows a count as each tap lands.
+> * `bin/config.xml` turns off `enableWrsProxy`, so requests go directly to the URL instead of through Amazon's proxy, which can't reach a local network address.
+
 WebLaunch is an extension for the Kindle Touch and Kindle PaperWhite with JailBreak and the application launcher KUAL. It is designed to open a URL without the browser frame (the black status bar can be removed too) to make it look like a native application.
 
 ## Install ##
